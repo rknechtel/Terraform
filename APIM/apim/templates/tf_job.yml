@@ -1,0 +1,60 @@
+
+## templates\tf_job.yml
+
+parameters:
+- name: working_dir
+  type: string
+  default: null
+- name: environment
+  type: string
+- name: postBuildSteps
+  type: stepList
+  default:
+    - script: echo 'No additional build steps included'
+- name: postDeploymentSteps
+  type: stepList
+  default:
+    - script: echo 'No additional deployment steps included'
+
+jobs:
+- job: Build_Infra
+  pool:
+    vmImage: ubuntu-latest
+  variables: 
+    - group: "tf-environment-vars-${{ parameters.environment }}"
+  steps:
+    - task: Bash@3
+      displayName: 'Initialize and Plan TF Code'
+      inputs:
+        workingDirectory: $(Build.SourcesDirectory)${{ parameters.working_dir }}
+        targetType: 'inline'
+        script: |
+          cp ./inputs/${{ parameters.environment}}.auto.tfvars ./
+          terraform init -force-copy \
+          -backend-config="key=${{ parameters.environment }}.tfstate" \
+          -backend-config="resource_group_name=$(backend_rg)" \
+          -backend-config="storage_account_name=$(backend_accnt)"
+          terraform plan -out ${{ parameters.environment }}.tfplan
+      env:
+        ARM_CLIENT_ID: $(id)
+        ARM_CLIENT_SECRET: $(sec)
+        ARM_SUBSCRIPTION_ID: $(sub)
+        ARM_TENANT_ID: $(tenant)
+        TF_IN_AUTOMATION: 1
+        TF_VAR_environment: ${{ parameters.environment }}
+        TF_VAR_envshort: $(env_short)
+        TF_VAR_aadsec: $(aadsec)
+    - task: Bash@3
+      displayName: 'Build Directory Cleanup'
+      inputs:
+        targetType: 'inline'
+        workingDirectory: $(Build.SourcesDirectory)${{ parameters.working_dir }}
+        script: |
+          sudo rm -r -f .terraform/
+          sudo rm -r -f .devcontainer.json
+    - ${{ parameters.postBuildSteps }}
+    - task: PublishBuildArtifacts@1
+      inputs:
+          pathtoPublish: $(Build.SourcesDirectory)${{ parameters.working_dir }}
+          artifactname: ${{ parameters.environment }}
+

@@ -1,0 +1,48 @@
+
+## apim-pipeline.yml
+
+trigger:
+  branches:
+    include:
+    - development
+    - main
+  paths:
+    include:
+    - apim/*
+stages:
+
+## Dev
+- stage: Dev_Build
+  condition: or(startsWith(variables['build.sourceBranch'], 'refs/heads/development'),startsWith(variables['system.pullRequest.targetBranch'], 'refs/heads/development'))
+  jobs:
+  - template: ../apim/templates/tf_job.yml  # Template reference
+    parameters:
+      environment: "dev"
+      working_dir: "/apim"
+	  
+## Test
+- stage: Test_Build
+  condition: startsWith(variables['build.sourceBranch'], 'refs/heads/development')
+  jobs:
+  - template: ../apim/templates/tf_job.yml  # Template reference
+    parameters:
+      environment: "test"
+      working_dir: "/apim"
+
+## Preprod
+- stage: PrePrd_Build
+  condition: startsWith(variables['build.sourceBranch'], 'refs/heads/development')
+  jobs:
+  - template: ../apim/templates/tf_job.yml  # Template reference
+    parameters:
+      environment: "preprd"
+      working_dir: "/apim"
+
+## Production
+- stage: Prod_Build
+  condition: startsWith(variables['build.sourceBranch'], 'refs/heads/main')
+  jobs:
+  - template: ../apim/templates/tf_job.yml  # Template reference
+    parameters:
+      environment: "prod"
+      working_dir: "/apim"

@@ -1,0 +1,1 @@
+These are example Terraform scripts for setting up variaous things in Azure API Management.
