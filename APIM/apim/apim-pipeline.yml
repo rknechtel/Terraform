@@ -11,7 +11,7 @@ trigger:
     - apim/*
 stages:
 
-## Dev
+## Create Dev APIM
 - stage: Dev_Build
   condition: or(startsWith(variables['build.sourceBranch'], 'refs/heads/development'),startsWith(variables['system.pullRequest.targetBranch'], 'refs/heads/development'))
   jobs:
@@ -20,7 +20,7 @@ stages:
       environment: "dev"
       working_dir: "/apim"
 	  
-## Test
+## Create Test APIM
 - stage: Test_Build
   condition: startsWith(variables['build.sourceBranch'], 'refs/heads/development')
   jobs:
@@ -29,7 +29,16 @@ stages:
       environment: "test"
       working_dir: "/apim"
 
-## Preprod
+# Create the PreProd KeyVault Resrouce Group and Key Vault
+#- stage: PrePrd_KeyVault_Build
+#  condition: startsWith(variables['build.sourceBranch'], 'refs/heads/development')
+#  jobs:
+#  - template: templates/tf_job_apim.yml  # Template reference
+#    parameters:
+#      environment: "preprod"
+#      working_dir: "/apim/keyvaults"
+
+## Create Preprod APIM
 - stage: PrePrd_Build
   condition: startsWith(variables['build.sourceBranch'], 'refs/heads/development')
   jobs:
@@ -38,7 +47,16 @@ stages:
       environment: "preprd"
       working_dir: "/apim"
 
-## Production
+# Create the Prod KeyVault Resrouce Group and Key Vault
+#- stage: Prod_KeyVault_Build
+#  condition: startsWith(variables['build.sourceBranch'], 'refs/heads/development')
+#  jobs:
+#  - template: templates/tf_job_apim.yml  # Template reference
+#    parameters:
+#      environment: "prd"
+#      working_dir: "/apim/keyvaults"
+
+## Create Production APIM
 - stage: Prod_Build
   condition: startsWith(variables['build.sourceBranch'], 'refs/heads/main')
   jobs:
