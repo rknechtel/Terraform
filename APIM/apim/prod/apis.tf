@@ -14,6 +14,7 @@ resource "azurerm_api_management_api" "my-first-service" {
     revision            = "1"
     service_url         = "https://${var.servicedomain}.mydomain.com/my-first-service"
     soap_pass_through   = false
+    subscription_required = true
 
     subscription_key_parameter_names {
         header = "Ocp-Apim-Subscription-Key"
@@ -36,6 +37,7 @@ resource "azurerm_api_management_api" "my-second-service" {
     revision            = "1"
     service_url         = "https://${var.servicedomain}.mydomain.com/my-second-service"
     soap_pass_through   = false
+    subscription_required = true
 
     subscription_key_parameter_names {
         header = "Ocp-Apim-Subscription-Key"
