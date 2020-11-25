@@ -1,8 +1,12 @@
 
 ## apim\main.tf
 
+### Declare Terraform Provider and Version ###
+### Terraform Version is declared in .devcontainer.json ###
 provider "azurerm" {
-  version = "=2.36.0"
+  version = "=2.37.0"
+  use_msi = true
+
   features {}
 }
 
@@ -42,9 +46,30 @@ resource "azurerm_api_management" "base" {
   sku_name             = var.apimsku
   virtual_network_type = "External"
 
+  identity {
+    type = "SystemAssigned"
+  }
+  
   virtual_network_configuration {
     subnet_id = azurerm_subnet.base.id
   }
+
+  ### Create Custom Domain ###
+  ### Note: key_vault_id - URL Comes from: ### 
+  ###  Key vaults --> KEYVAULT --> Settings --> Certificates --> SSLCERTIFICATEINKEYVAULT --> Completed --> CURRENT VERSION --> Properties --> Secret Identifier ###
+  ### Note: Custom Domain should show up in APIM: ###
+  ### APIMINSTNACE --> Deployment and infrastructure --> Custom domains ###  
+  resource "azurerm_api_management_custom_domain" "preprod" {
+    api_management_id = azurerm_api_management.base.id
+
+    proxy {
+      host_name    = var.customdomain
+      key_vault_id = var.keyvaultsecretid
+    }
+
+    depends_on = [azurerm_api_management.base]
+  }
+
 }
 
 ### Create AAD Identity Provider ###

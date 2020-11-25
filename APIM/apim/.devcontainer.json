@@ -1,0 +1,10 @@
+{
+    // Install extensions
+    "extensions": [
+      "HashiCorp.terraform",
+      "hookyqr.beautify",
+      "ms-vscode.azure-account",
+      "visualstudioexptteam.vscodeintellicode"
+    ],
+    "postCreateCommand": "wget https://releases.hashicorp.com/terraform/0.13.5/terraform_0.13.5_windows_amd64.zip; unzip terraform_0.13.5_windows_amd64.zip; sudo mv terraform /usr/local/bin/; rm -r -f terraform_0.13.5_windows_amd64.zip"
+  }

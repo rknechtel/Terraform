@@ -1,6 +1,4 @@
-
-## templates\tf_job.yml
-
+# File Name: tf_job_apim.yml
 parameters:
 - name: working_dir
   type: string
@@ -20,16 +18,29 @@ jobs:
 - job: Build_Infra
   pool:
     vmImage: ubuntu-latest
+  
+  # Variables and Variable Groups
   variables: 
     - group: "tf-environment-vars-${{ parameters.environment }}"
+
+
   steps:
+
+    # Install the Azure PowerShell Module
+    #- task: CmdLine@2
+    #  displayName: 'Install Az Powershell Modules'
+    #  inputs:
+    #  script: |
+    #    sudo /usr/bin/pwsh -NoLogo -NoProfile -NonInteractive -ExecutionPolicy Unrestricted -File "$(Build.Repository.LocalPath)/scripts/install-az-modules.ps1" 
+
+    # Initialize and Plan Terraform Code
     - task: Bash@3
       displayName: 'Initialize and Plan TF Code'
       inputs:
         workingDirectory: $(Build.SourcesDirectory)${{ parameters.working_dir }}
         targetType: 'inline'
         script: |
-          cp ./inputs/${{ parameters.environment}}.auto.tfvars ./
+          cp ../inputs/${{ parameters.environment}}.auto.tfvars ./
           terraform init -force-copy \
           -backend-config="key=${{ parameters.environment }}.tfstate" \
           -backend-config="resource_group_name=$(backend_rg)" \
@@ -44,6 +55,8 @@ jobs:
         TF_VAR_environment: ${{ parameters.environment }}
         TF_VAR_envshort: $(env_short)
         TF_VAR_aadsec: $(aadsec)
+
+    # Cleanup the Build Directory
     - task: Bash@3
       displayName: 'Build Directory Cleanup'
       inputs:
@@ -53,8 +66,9 @@ jobs:
           sudo rm -r -f .terraform/
           sudo rm -r -f .devcontainer.json
     - ${{ parameters.postBuildSteps }}
+
+    # Publish the Build Artifacts
     - task: PublishBuildArtifacts@1
       inputs:
           pathtoPublish: $(Build.SourcesDirectory)${{ parameters.working_dir }}
           artifactname: ${{ parameters.environment }}
-

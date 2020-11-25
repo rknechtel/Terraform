@@ -43,4 +43,9 @@ variable "prdoverride" {
   type = string
   default = ""
 }
-
+variable "customdomain" {
+  type = string
+}
+variable "keyvaultsecretid" {
+  type = string
+}

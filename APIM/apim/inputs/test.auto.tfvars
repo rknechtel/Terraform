@@ -10,3 +10,6 @@ apimsku="Developer_1"
 servicedomain="testapache"
 aadten="af3b07d3-11b5-4660-8702-4db77bdf01beeee"
 aadid="51894bb3-33a6-4ef8-90c8-a086a7689cc44444"
+### Custom Domain Name ###
+customdomain="ENV-apim.MYDOMAIN.com"
+keyvaultsecretid="https://az-t-apimkeyvault.vault.azure.net/secrets/ENV-apim-MYDOMAIN-com/e70a1e08f30346d56c2bc6f7bbfea8e3"
