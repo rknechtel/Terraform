@@ -1,3 +1,7 @@
+#! /usr/bin/pwsh
+# Note: Need the above to run PowerShell Scripts in Linux.
+#       Remove for Windows.
+
 <#
 .SYNOPSIS
   This script will import a Root CA Certificate into APIM Security--> CA certificates
@@ -8,20 +12,7 @@
   Based on:
   https://docs.microsoft.com/en-us/powershell/module/az.apimanagement/new-azapimanagementsystemcertificate?view=azps-5.0.0
   https://docs.microsoft.com/en-us/powershell/module/az.apimanagement/set-azapimanagement?view=azps-5.0.0
-
-  Example Terraform:
-  Note: this goes inside of your APIM Terraform definition:
-  resource "azurerm_api_management" "base" {
-   APIM Definition goes here.
-  }
-  # Upload Root CA Certificate
-  provisioner "local-exec" {
-        command = "powershell -file ./scripts/mportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath ./sslcerts/RootCA1.cer -APIMInstance ${var.environment}-company-${var.service} -SubscriptionId ${var.subscriptionid}"
-  }
-
-  Ref:
-  https://stackoverflow.com/questions/57046615/how-to-execute-powershell-file-in-azure-from-terraform-both-from-local-and-from
-
+    
 .PARAMETER ResourceGroup
     The Azure APIM Resource Group
 
@@ -41,15 +32,15 @@
   None
   
 .NOTES
-  Script Name: ImportAzureRootCA.ps1
+  Script Name: ImportRootCA.ps1
   Version:        1.0
   Author:         Richard Knechtel
-  Creation Date:  09/14/2020
+  Creation Date:  11/11/2020
   Purpose/Change: Initial script development
   
 .EXAMPLE
   Note this is called from Terraform thus Terraform Variables
-  ./ImportAzureRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath ./sslcerts/RootCA1.cer -APIMInstance ${var.environment}-ccmapny-${var.service} -SubscriptionId ${var.subscriptionid}
+  ./ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath ./sslcerts/DOMAINRootCA1.cer -APIMInstance ${var.environment}-church-${var.service} -SubscriptionId ${var.subscriptionid}
 #>
 
 #---------------------------------------------------------[Script Parameters]------------------------------------------------------
@@ -80,17 +71,21 @@ $ScriptVersion = "1.0"
 
 N/A
 
+
 #-----------------------------------------------------------[Execution]------------------------------------------------------------
 
-Write-Host "Starting ImportAzureRootCA script Version $ScriptVersion.";
+Write-Host "Starting ImportRootCA script Version $ScriptVersion.";
 Write-Host "*******************************************************";
 
 try 
 {
   Write-Host "Starting Import of Root CA Certificate";
-  
-  # Connect to Aure
-  #Connect-AzAccount
+
+  # Parameters Passed:
+  Write-Host "Resource Group = $ResourceGroup";
+  Write-Host "Root CA Path = $RootCAPath";
+  Write-Host "APIM Instance = $APIMInstance";
+  Write-Host "Starting Import of Root CA Certificate";
   
   # Get Subscription Context
   $context = Get-AzSubscription -SubscriptionId $SubscriptionId
@@ -107,6 +102,7 @@ try
   # Update APIM
   Set-AzApiManagement -InputObject $apim
 
+
   Write-Host "Finished Import of Root CA Certificate";
 }  
 catch
@@ -114,17 +110,18 @@ catch
   # Catch any errors and report them
   $ErrorMessage = $_.Exception.Message;
   $FailedItem = $_.Exception.ItemName;
-  Write-Host "Exception caught in ImportAzureRootCA: $ErrorMessage";
-  Write-Host "Exception caught in ImportAzureRootCA - failed at: $FailedItem";
+  Write-Host "Exception caught in ImportRootCA: $ErrorMessage";
+  Write-Host "Exception caught in ImportRootCA - failed at: $FailedItem";
 }
 finally
 {
-  Write-Host "Finished running ImportAzureRootCA script Version $ScriptVersion.";
+  Write-Host "Finished running ImportRootCA script Version $ScriptVersion.";
   Write-Host "**************************************************************";
 
   # Example setting return code/message
-  $global:ReturnCodeMsg="There was an Error in ImportAzureRootCA."
+  $global:ReturnCodeMsg="There was an Error in ImportRootCA."
 }
 
 # Some Value or Variable
 return $ReturnCodeMsg
+
