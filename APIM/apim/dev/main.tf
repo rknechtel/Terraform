@@ -196,18 +196,18 @@ XML
 ###  Key vaults --> KEYVAULT --> Settings --> Certificates --> SSLCERTIFICATEINKEYVAULT --> Completed --> CURRENT VERSION --> Properties --> Secret Identifier ###
 ### Note: Custom Domain should show up in APIM: ###
 ### APIMINSTNACE --> Deployment and infrastructure --> Custom domains ###  
-resource "azurerm_api_management_custom_domain" "preprod" {
-  api_management_id = azurerm_api_management.base.id
-
-  proxy {
-    default_ssl_binding = true
-    host_name    = var.customdomain
-    key_vault_id = var.keyvaultsecretid
-    negotiate_client_certificate = false
-  }
-
-  depends_on = [azurerm_api_management.base]
-}
+#resource "azurerm_api_management_custom_domain" "dev" {
+#  api_management_id = azurerm_api_management.base.id
+#
+#  proxy {
+#    default_ssl_binding = true
+#    host_name    = var.customdomain
+#    key_vault_id = var.keyvaultsecretid
+#    negotiate_client_certificate = false
+#  }
+#
+#  depends_on = [azurerm_api_management.base]
+#}
 
 ### Create AAD Identity Provider ###
 resource "azurerm_api_management_identity_provider_aad" "base" {
@@ -223,19 +223,22 @@ resource "null_resource" "ImportRootCACert" {
   triggers = {lastRunTimestamp = timestamp()}
 
 ### Upload Root CA Certificate into APIM Security --> CA Certificates ###
-##resource "null_resource" "ImportRootCACert" {
-##  triggers = {lastRunTimestamp = timestamp()}
+resource "null_resource" "ImportRootCACert" {
+  triggers = {lastRunTimestamp = timestamp()}
 
   # Upload Root CA Certificate into APIM Security --> CA Certificates
-##  provisioner "local-exec" {
-##    command = "'.//scripts//ImportRootCA.ps1' -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath sslcerts/DOMAINCA1.cer -APIMInstance ${var.environment}-mycompany-${var.service} -SubscriptionId ${var.subscriptionid}"
+  provisioner "local-exec" {
+    # This works for calling PowerShell Script
+    # Note: scripts and sslcerts directories and their contents must be inside the preprod directory so they are part of the published artifacts to get downloaded.
+    command = "scripts/ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath sslcerts/ChurchMutualRootCA1.cer -APIMInstance ${var.environment}-church-${var.service} -SubscriptionId ${var.subscriptionid} -TenantID ${var.aadten}"
     # For Windows:
     #interpreter = ["PowerShell", "-Command"]
     #interpreter = ["PowerShell", "-File"]
     # For Linux:
-    #interpreter = ["pwsh", "-Command"]
-##    interpreter = ["pwsh", "-File"]
-##  }
-##
-##  depends_on = [azurerm_api_management.base]
-##}
+    interpreter = ["pwsh", "-Command"]
+    #interpreter = ["pwsh", "-File"]
+  }
+
+  depends_on = [azurerm_api_management.base]
+}
+
