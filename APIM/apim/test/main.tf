@@ -58,7 +58,7 @@ resource "azurerm_api_management" "base" {
   identity {
     type = "SystemAssigned, UserAssigned"
     identity_ids = [
-        azurerm_user_assigned_identity.ppspImportRootCA.id
+        azurerm_user_assigned_identity.tstspImportRootCA.id
     ] 
   }
 

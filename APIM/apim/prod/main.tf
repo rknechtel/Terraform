@@ -32,10 +32,10 @@ resource "azurerm_network_security_group" "base" {
   resource_group_name = "${var.baseprefix}-${var.envshort}-nsg-${var.envshort}-rg-cus-0001"
 }
 
-### Add a Dev User Assigned Identity ###
+### Add a Production User Assigned Identity ###
 ### Note: Created under the above Base APIM Resource Group ###
 ### Gets put in: APIM --> Security --> Managed identities --> User assigned ###
-resource "azurerm_user_assigned_identity" "devspImportRootCA" {
+resource "azurerm_user_assigned_identity" "prspImportRootCA" {
   resource_group_name = azurerm_resource_group.base.name
   location            = var.location
   name = var.userassignedidentity
@@ -59,7 +59,7 @@ resource "azurerm_api_management" "base" {
   identity {
     type = "SystemAssigned, UserAssigned"
     identity_ids = [
-        azurerm_user_assigned_identity.ppspImportRootCA.id
+        azurerm_user_assigned_identity.prspImportRootCA.id
     ] 
   }
 

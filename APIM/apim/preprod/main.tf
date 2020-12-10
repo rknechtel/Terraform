@@ -35,7 +35,7 @@ resource "azurerm_network_security_group" "base" {
 ### Add a Preprod User Assigned Identity ###
 ### Note: Created under the above Base APIM Resource Group ###
 ### Gets put in: APIM --> Security --> Managed identities --> User assigned ###
-resource "azurerm_user_assigned_identity" "ppvspImportRootCA" {
+resource "azurerm_user_assigned_identity" "ppspImportRootCA" {
   resource_group_name = azurerm_resource_group.base.name
   location            = var.location
   name = var.userassignedidentity
