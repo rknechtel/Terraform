@@ -32,6 +32,17 @@ resource "azurerm_network_security_group" "base" {
   resource_group_name = "${var.baseprefix}-${var.envshort}-nsg-${var.envshort}-rg-cus-0001"
 }
 
+### Add a Preprod User Assigned Identity ###
+### Note: Created under the above Base APIM Resource Group ###
+### Gets put in: APIM --> Security --> Managed identities --> User assigned ###
+resource "azurerm_user_assigned_identity" "ppvspImportRootCA" {
+  resource_group_name = azurerm_resource_group.base.name
+  location            = var.location
+  name = var.userassignedidentity
+
+  depends_on = [azurerm_resource_group.base]
+}
+
 ### Create APIM ###
 ### Note: Created under the above Base APIM Resource Group ###
 ### Note: RSK 10/09/2020: Added on-error policy to capture better error messages ###
@@ -44,11 +55,15 @@ resource "azurerm_api_management" "base" {
   sku_name             = var.apimsku
   virtual_network_type = "External"
 
+  # Link new User Assigned Identity to APIM
   identity {
-    type = "SystemAssigned"
+    type = "SystemAssigned, UserAssigned"
+    identity_ids = [
+        azurerm_user_assigned_identity.ppspImportRootCA.id
+    ] 
   }
 
-### Note Added "Default" stuff here Per Joe Jesky of Concurrency ###
+### Note Added "Default" stuff here ###
   hostname_configuration {
     proxy {
       default_ssl_binding          = true
@@ -223,21 +238,19 @@ resource "azurerm_api_management_identity_provider_aad" "base" {
 resource "null_resource" "ImportRootCACert" {
   triggers = {lastRunTimestamp = timestamp()}
 
-### Upload Root CA Certificate into APIM Security --> CA Certificates ###
-resource "null_resource" "ImportRootCACert" {
-  triggers = {lastRunTimestamp = timestamp()}
-
   # Upload Root CA Certificate into APIM Security --> CA Certificates
   provisioner "local-exec" {
+
     # This works for calling PowerShell Script
     # Note: scripts and sslcerts directories and their contents must be inside the preprod directory so they are part of the published artifacts to get downloaded.
-    command = "scripts/ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath sslcerts/ChurchMutualRootCA1.cer -APIMInstance ${var.environment}-church-${var.service} -SubscriptionId ${var.subscriptionid} -TenantID ${var.aadten}"
+    command = "scripts/ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath sslcerts/DOMAINRootCA1.cer -APIMInstance ${var.environment}-church-${var.service} -SubscriptionId ${var.subscriptionid} -TenantID ${var.aadten} -UserAssignedIdentity ${var.userassignedidentity}"
     # For Windows:
     #interpreter = ["PowerShell", "-Command"]
     #interpreter = ["PowerShell", "-File"]
     # For Linux:
     interpreter = ["pwsh", "-Command"]
     #interpreter = ["pwsh", "-File"]
+
   }
 
   depends_on = [azurerm_api_management.base]

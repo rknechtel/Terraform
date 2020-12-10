@@ -49,3 +49,6 @@ variable "customdomain" {
 variable "keyvaultsecretid" {
   type = string
 }
+variable "userassignedidentity" {
+  type = string
+}

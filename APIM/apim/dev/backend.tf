@@ -1,8 +1,13 @@
 ## apim\backend.tf
 
-### Declare Terraform Provider and Version ### ### Terraform Version is declared in .devcontainer.json ### provider "azurerm" {
+### Declare Terraform Provider and Version ### ### Terraform Version is declared in .devcontainer.json ### 
+provider "azurerm" {
   version = "=2.37.0"
   features {}
+}
+
+provider "null" {
+  version = "=3.0.0"
 }
 
 terraform {
@@ -29,5 +34,13 @@ terraform {
       use_msi = true
 
     }
+
+    ### Use for null_resource ###
+    null = {
+      source  = "hashicorp/null"
+      version = "3.0.0"
+      use_msi = true
+    }
+    
   }
 }
