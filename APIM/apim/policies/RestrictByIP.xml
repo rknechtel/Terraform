@@ -1,0 +1,23 @@
+<!--
+  RestrictByIP.xml
+-->
+<!-- Filter: -->
+<ip-filter action="allow | forbid">
+    <address>address</address>
+    <address-range from="address" to="address" />
+</ip-filter>
+
+<!-- Examples: -->
+<ip-filter action="allow">
+    <address>13.66.201.169</address>
+    <address-range from="13.66.140.128" to="13.66.140.143" />
+</ip-filter>
+
+<policies>
+    <inbound>
+      <ip-filter action="allow">
+          <address>10.10.1.1</address>
+          <address>10.10.1.200</address>
+      </ip-filter>
+    </inbound>
+</policies>

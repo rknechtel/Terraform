@@ -1,4 +1,4 @@
-## apim\backend.tf
+## apim\preprod\backend.tf
 
 ### Declare Terraform Provider and Version ### ### Terraform Version is declared in .devcontainer.json ### 
 provider "azurerm" {

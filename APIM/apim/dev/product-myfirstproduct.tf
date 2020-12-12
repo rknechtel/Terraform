@@ -1,5 +1,5 @@
 
-# apim\product-myfirstproduct.tf
+# apim\dev\product-myfirstproduct.tf
 
 ### Base product definition ###
 

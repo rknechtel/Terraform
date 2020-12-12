@@ -1,4 +1,4 @@
-## apim\variables.tf
+## apim\dev\variables.tf
 
 variable "environment" {
   type = string

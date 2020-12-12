@@ -1,5 +1,5 @@
 
-## apim\mgmt-groups.tf
+## apim\prod\mgmt-groups.tf
 
 ### APIM Management Group cmicdevelopers ###
 resource "azurerm_api_management_group" "mydevelopers" {

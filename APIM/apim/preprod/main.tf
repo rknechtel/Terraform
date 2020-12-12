@@ -1,4 +1,4 @@
-## apim\main.tf
+## apim\preprod\main.tf
 
 locals {
   prefix = "${var.baseprefix}-${var.envshort}-${var.service}-${var.envshort}-"

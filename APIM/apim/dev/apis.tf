@@ -1,5 +1,5 @@
 
-## apim\apis.tf
+## apim\dev\apis.tf
 
 ### my-first-service APIM Service ###
 resource "azurerm_api_management_api" "my-first-service" {
