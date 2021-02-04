@@ -39,6 +39,7 @@
 .LICENSE
  This script is in the public domain, free from copyrights or restrictions.
 
+ 
 .EXAMPLE
   Note this is called from Terraform thus Terraform Variables
   ./ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath ./sslcerts/MYDOMAINRootCA1.cer -APIMInstance ${var.environment}-mycompany-${var.service} -SubscriptionId ${var.subscriptionid} -TenantID ${var.tenant} -UserAssignedIdentity ${var.userassignedidentity}
