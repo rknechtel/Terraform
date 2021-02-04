@@ -2,10 +2,10 @@
 # Note: Need the above to run PowerShell Scripts in Linux.
 <#
 .SYNOPSIS
-  This script will import a Root CA Certificate into APIM Security--> CA certificates
+  This script will import a Root CA Certificate into APIM Security --> Certificates --> CA Certificates
   
 .DESCRIPTION
-  This script will import a Root CA Certificate into APIM Security--> CA certificates using Terraform
+  This script will import a Root CA Certificate into APIM Security --> Certificates --> CA Certificates using Terraform
   Note: This runs in console mode so no log file will be created.
   Based on:
   https://docs.microsoft.com/en-us/powershell/module/az.apimanagement/new-azapimanagementsystemcertificate?view=azps-5.0.0
@@ -35,10 +35,13 @@
   Author:         Richard Knechtel
   Creation Date:  11/11/2020
   Purpose/Change: Initial script development
-  
+
+.LICENSE
+ This script is in the public domain, free from copyrights or restrictions.
+
 .EXAMPLE
   Note this is called from Terraform thus Terraform Variables
-  ./ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath ./sslcerts/ChurchMutualRootCA1.cer -APIMInstance ${var.environment}-church-${var.service} -SubscriptionId ${var.subscriptionid} -TenantID ${var.tenant} -UserAssignedIdentity ${var.userassignedidentity}
+  ./ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath ./sslcerts/MYDOMAINRootCA1.cer -APIMInstance ${var.environment}-mycompany-${var.service} -SubscriptionId ${var.subscriptionid} -TenantID ${var.tenant} -UserAssignedIdentity ${var.userassignedidentity}
 #>
 
 #---------------------------------------------------------[Script Parameters]------------------------------------------------------
@@ -60,7 +63,7 @@ param(
 #---------------------------------------------------------[Initialisations]--------------------------------------------------------
 
 #Set Error Action to Silently Continue
-$ErrorActionPreference = 'SilentlyContinue'
+#$ErrorActionPreference = 'SilentlyContinue'
 
 $global:ReturnCodeMsg = "Completed Successfully"
 
@@ -111,52 +114,61 @@ try
   }
 
   # Connect to Azure
-  #Connect-AzAccount -Tenant $TenantID -Subscription $SubscriptionId
+  # Note: When running in Azure Pipelines (ADO) - Error from Get-AzUserAssignedIdentity:
+  # "Run Connect-AzAccount to login."
+  # Catch-22:
+  # Running Get-AzUserAssignedIdentity Erros with "Run Connect-AzAccount to login", but I need the Identity from Get-AzUserAssignedIdentity to run "Connect-AzAccount".
+  # Seems you might need to connect to Azure with a service account first.
+
   Write-Host "Connect to Azure using User Assigned Identity $UserAssignedIdentity";
-  Write-Host "Get-AzUserAssignedIdentity -ResourceGroupName "$ResourceGroup" -Name "$UserAssignedIdentity""
-  $identity = Get-AzUserAssignedIdentity -ResourceGroupName "$ResourceGroup" -Name "$UserAssignedIdentity"
+  Write-Host "Get-AzUserAssignedIdentity -ResourceGroupName "$ResourceGroup" -Name "$UserAssignedIdentity" | Select-Object -ExpandProperty ClientID"
+  $identity = Get-AzUserAssignedIdentity -ResourceGroupName "$ResourceGroup" -Name "$UserAssignedIdentity" | Select-Object -ExpandProperty ClientID -ErrorAction Continue
+ 
+  Write-host "Returned Identity = $identity"
 
   if ($null -eq $identity) {
     Write-Host "identity is null"
+    throw [System.NullReferenceException]::New('identity is null!')
   }
   else {
-    Write-Host "identity:"
-    Write-Host "$identity"
-    Write-Host "identity.ClientId:"
-    Write-Host "$identity.ClientId"    
-  }
+
+    Write-Host "identity is not null: $identity"
+
+    write-host "Connect-AzAccount -Identity -AccountId $identity"
+    Connect-AzAccount -Identity -AccountId $identity
+
+    # Get Subscription Context (Must connect to Azure First)
+    Write-Host "Gettting AzSubscription: $SubscriptionId"
+    $context = Get-AzSubscription -SubscriptionId $SubscriptionId
+    Set-AzContext $context
+
+    # Get handle to APIM Instance
+    Write-Host "Getting handle to APIM";
+    $apim = Get-AzApiManagement -ResourceGroupName "$ResourceGroup" -Name "$APIMInstance"
+
+    # Check if We have System Certificates or not
+    Write-Host "Check if We have System Certificates or not";
+    if ($null -eq $apim.SystemCertificates) {
+
+      Write-Host "We do not have System Certificates";
+
+      # Run the Import of the Root CA Certificate
+      Write-Host "Creating New APIM System Certificate";
+      $rootCa = New-AzApiManagementSystemCertificate -StoreName "Root" -PfxPath "$RootCAPath"
+      $systemCert = @($rootCa)
+
+      # System Certificate to APIM
+      $apim.SystemCertificates = $systemCert
   
-  Connect-AzAccount -Identity -AccountId $identity.ClientId
-  Connect-AzAccount -Identity
+      # Update APIM
+      Write-Host "Updating APIM With System Root CA Certificate.";
+      Set-AzApiManagement -InputObject $apim
 
-  # Get Subscription Context (Must connect to Azure First)
-  Write-Host "Gettting AzSubscription: $SubscriptionId";
-  $context = Get-AzSubscription -SubscriptionId $SubscriptionId
-  Set-AzContext $context
-
-  # Get handle to APIM Instance
-  Write-Host "Getting handle to APIM";
-  $apim = Get-AzApiManagement -ResourceGroupName "$ResourceGroup" -Name "$APIMInstance"
-
-  # Check if We have System Certificates or not
-  Write-Host "Check if We have System Certificates or not";
-  if ($null -eq $apim.SystemCertificates) {
-
-    Write-Host "We do not have System Certificates";
-
-    # Run the Import of the Root CA Certificate
-    Write-Host "Creating New APIM System Certificate";
-    $rootCa = New-AzApiManagementSystemCertificate -StoreName "Root" -PfxPath "$RootCAPath"
-    $systemCert = @($rootCa)
-
-    # System Certificate to APIM
-    $apim.SystemCertificates = $systemCert
-  
-    # Update APIM
-    Write-Host "Updating APIM With System Root CA Certificate.";
-    Set-AzApiManagement -InputObject $apim
-
-    Write-Host "Finished Import of Root CA Certificate";
+      Write-Host "Finished Import of Root CA Certificate";
+    }
+    else {
+      Write-Host "We already have a System Certificates";
+    }
   }
 
 }  
@@ -174,10 +186,7 @@ finally
   Write-Host "**************************************************************";
 
   # Example setting return code/message
-  $global:ReturnCodeMsg="There was an Error in ImportRootCA."
+  #$global:ReturnCodeMsg="There was an Error in ImportRootCA."
 }
 
-# Some Value or Variable
-return $ReturnCodeMsg
-
-
+return $LASTEXITCODE
