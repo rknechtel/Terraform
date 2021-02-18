@@ -1,19 +1,28 @@
 ## apim\preprod\backend.tf
-
-### Declare Terraform Provider and Version ### ### Terraform Version is declared in .devcontainer.json ### 
+### Declare Terraform Provider ###
+### Note: Declaring versions in "provider" block is depricated" ###
+### Terraform Version is declared in .devcontainer.json ###
 provider "azurerm" {
-  version = "=2.37.0"
+  # Note: Must upgrade versions incrementally - big jumps in versions causes issues in APIM.
+  #version = "2.37.0" # Works ok.
+  #version = "2.38.0" # Works ok.
+  #version = "2.39.0" # Works ok.
+  #version = "2.40.0" # Works ok.
+  #version = "2.41.0" # Works ok.
+  #version = "2.42.0" # Works ok.
+  #version = "2.43.0" # Works ok.
+  #version = "2.44.0" # Works ok.
+  #version = "2.45.0" # Works ok.
+  #version = "2.46.0" # Works ok.
+  #version = "2.47.0" # Works ok.
   features {}
-}
-
-provider "null" {
-  version = "=3.0.0"
 }
 
 terraform {
 
     backend "azurerm" {
         container_name          = "apimstatebackend"
+        use_msi = true
     }
 
   ### Declare Terraform Provider and Version ###
@@ -27,20 +36,21 @@ terraform {
       # as a measure of backward compatibility for commonly-used providers, 
       # but recommended for explicitness.
       # Ref:
-      # Upgrading to Terraform v0.13 - Terraform by HashiCorp
-      # https://www.terraform.io/upgrade-guides/0-13.html
+      # Upgrading to Terraform v0.14.6 - Terraform by HashiCorp
+      # https://www.terraform.io/upgrade-guides/0-14.html
       source  = "hashicorp/azurerm"
-      version = "2.37.0"
-      use_msi = true
-
+      # Note: Must upgrade versions incrementally - big jumps in versions causes issues in APIM.
+      #version = "2.37.0" # Works ok.
+      #version = "2.38.0" # Works ok.
+      #version = "2.39.0" # Works ok.
+      #version = "2.40.0" # Works ok.
+      #version = "2.41.0" # Works ok.
+      #version = "2.42.0" # Works ok.
+      #version = "2.43.0" # Works ok.
+      #version = "2.44.0" # Works ok.
+      #version = "2.45.0" # Works ok.
+      #version = "2.46.0" # Works ok.
+      version = "2.47.0" # Works ok.
     }
-
-    ### Use for null_resource ###
-    null = {
-      source  = "hashicorp/null"
-      version = "3.0.0"
-      use_msi = true
-    }
-  
   }
 }

@@ -50,33 +50,17 @@ resource "azurerm_api_management" "base" {
   location             = var.location
   resource_group_name  = azurerm_resource_group.base.name
   publisher_name       = "My Company"
-  publisher_email      = "me@mycompany.com"
+  publisher_email      = "admin@mydomain.com"
   sku_name             = var.apimsku
   virtual_network_type = "External"
 
-  # Link new User Assigned Identity to APIM
-  identity {
-    type = "SystemAssigned, UserAssigned"
-    identity_ids = [
-        azurerm_user_assigned_identity.devspImportRootCA.id
-    ] 
-  }
-
-### Note Added "Default" stuff ###
+### Note Added "Default" stuff here ###
   hostname_configuration {
     proxy {
       default_ssl_binding          = true
       host_name                    = "${var.environment}-mycompany-${var.service}.azure-api.net"
       negotiate_client_certificate = false
     }
-    
-    ### Create Preprod Custom Domain and link to SSL Certificate in Key Vault ###
-    proxy {
-      default_ssl_binding = true
-      host_name    = var.customdomain
-      key_vault_id = var.keyvaultsecretid
-      negotiate_client_certificate = false
-    }    
   }
 
   protocols {
@@ -90,7 +74,10 @@ resource "azurerm_api_management" "base" {
     enable_frontend_ssl30     = false
     enable_frontend_tls10     = false
     enable_frontend_tls11     = false
-    enable_triple_des_ciphers = false
+    # Use with AzureRM 2.37.0 and lower
+    #enable_triple_des_ciphers = false
+    # Use with AzureRM 2.44.0+
+    triple_des_ciphers_enabled = false
   }
 
   sign_in {
@@ -119,17 +106,10 @@ resource "azurerm_api_management" "base" {
   ###            It puts it under "Security" --> "Certificates"
   ###            Manually upload after each Terraform run in each environment
 #  certificate {
-#    encoded_certificate = filebase64("sslcerts/DOMAINRootCA1.cer")
-#    encoded_certificate = filebase64("sslcerts/DOMAINRootCA.pfx")
+#    encoded_certificate = filebase64("sslcerts/MyCompanyRootCA1.cer")
+#    encoded_certificate = filebase64("sslcerts/MyCompanyRootCA.pfx")
 #    certificate_password = "PASSWORD"
 #    store_name = "Root"
-#  }
-
-#  hostname_configuration {
-#    proxy {
-#      host_name = "${var.environment}-apim-mycopany-com"
-#      key_vault_id = "${data.azurerm_key_vault_secret.core_apim.id}"
-#    }s is there one 
 #  }
 
   ### APIM Policies ###
