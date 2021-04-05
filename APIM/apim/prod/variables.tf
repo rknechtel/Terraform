@@ -52,3 +52,6 @@ variable "keyvaultsecretid" {
 variable "userassignedidentity" {
   type = string
 }
+variable "cacertpfxpw" {
+  type = string
+}

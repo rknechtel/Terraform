@@ -14,3 +14,4 @@ aadid="d0a72537-509b-4906-a3c1-0dcccdea5c50000"
 ### Custom Domain Name ###
 customdomain="ENV-apim.MYDOMAIN.com"
 keyvaultsecretid="https://az-s-apimkeyvault.vault.azure.net/secrets/ENV-apim-MYDOMAIN-com/e70a1e08f30346d56c2bc6f7bbfea8e3"
+cacertpfxpw = "MYCERTPASSWORD"

@@ -15,3 +15,4 @@ prdoverride="az-p-network-p-rg-p-cus-00011111111"
 ### Custom Domain Name ###
 customdomain="ENV-apim.MYDOMAIN.com"
 keyvaultsecretid="https://az-p-apimkeyvault.vault.azure.net/secrets/ENV-apim-MYDOMAIN-com/e70a1e08f30346d56c2bc6f7bbfea8e3"
+cacertpfxpw = "MYCERTPASSWORD"

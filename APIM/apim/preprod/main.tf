@@ -103,15 +103,13 @@ resource "azurerm_api_management" "base" {
 
 
   ### Upload Root CA Cert into APIM ###
-  ### Rich Note: This doesn't create cert under "Security" --> "CA Certificates" Like it needs to be
-  ###            It puts it under "Security" --> "Certificates"
-  ###            Manually upload after each Terraform run in each environment
-#  certificate {
-#    encoded_certificate = filebase64("sslcerts/MyCompanyRootCA1.cer")
-#    encoded_certificate = filebase64("sslcerts/MyCompanyRootCA.pfx")
-#    certificate_password = "PASSWORD"
-#    store_name = "Root"
-#  }
+  ### Rich Note: 
+  ### Puts CA Cert under "Security" --> "Certificates" --> "CA certificates"
+  certificate {
+    encoded_certificate = file("sslcerts/MyRootCA.pfx")
+    certificate_password = var.cacertpfxpw
+    store_name = "Root"
+  }
 
   ### APIM Policies ###
   policy {
@@ -215,23 +213,23 @@ resource "azurerm_api_management_identity_provider_aad" "base" {
 }
 
 ### Upload Root CA Certificate into APIM Security --> CA Certificates ###
-resource "null_resource" "ImportRootCACert" {
-  triggers = {lastRunTimestamp = timestamp()}
+#resource "null_resource" "ImportRootCACert" {
+#  triggers = {lastRunTimestamp = timestamp()}
 
   # Upload Root CA Certificate into APIM Security --> CA Certificates
-  provisioner "local-exec" {
+#  provisioner "local-exec" {
 
     # This works for calling PowerShell Script
     # Note: scripts and sslcerts directories and their contents must be inside the preprod directory so they are part of the published artifacts to get downloaded.
-    command = "scripts/ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath sslcerts/DOMAINRootCA1.cer -APIMInstance ${var.environment}-church-${var.service} -SubscriptionId ${var.subscriptionid} -TenantID ${var.aadten} -UserAssignedIdentity ${var.userassignedidentity}"
+#    command = "scripts/ImportRootCA.ps1 -ResourceGroup ${local.prefix}rg${local.suffix} -RootCAPath sslcerts/DOMAINRootCA1.cer -APIMInstance ${var.environment}-church-${var.service} -SubscriptionId ${var.subscriptionid} -TenantID ${var.aadten} -UserAssignedIdentity ${var.userassignedidentity}"
     # For Windows:
     #interpreter = ["PowerShell", "-Command"]
     #interpreter = ["PowerShell", "-File"]
     # For Linux:
-    interpreter = ["pwsh", "-Command"]
+#    interpreter = ["pwsh", "-Command"]
     #interpreter = ["pwsh", "-File"]
 
-  }
+#  }
 
-  depends_on = [azurerm_api_management.base]
-}
+#  depends_on = [azurerm_api_management.base]
+#}
